@@ -303,4 +303,346 @@ class Productcontroller extends Controller
                 return response()->json($final_array);   
     }
 
+
+       //list of product for admin
+       public function admin_product_list(Request $request){
+        $filter=$request->filter;
+                $token = JWTAuth::parseToken()->getPayload()->toArray();
+                $id=$token['id'];
+        if($filter == "In stock"){
+             $products=Products::where('owner_id',$id)->where('stock',"In stock")->paginate(10)->toArray();
+            $product_array=array();
+            foreach($products['data'] as $product){
+                    $product_id=$product['id'];
+                    $product_image= Sub_product::where('product_id',$product_id)->first();
+                    $image_url=$product_image->image_url;
+                    $product_order_count=Orders::where('product_id',$product_id)->count();
+                    $product_amount_made= Orders::where('product_id',$product_id)->sum('product_price');
+                    $date_time_created= $product['created_date'].','.$product['created_time'];
+                    $aprove_status= "";
+                    if($product['product_aprove_status'] == true){
+                       $aprove_status= "Approved";
+                    }else{
+                        $aprove_status= "Not Approved";
+                    }
+                    $product_list=[
+                        "id"=>$product['id'],
+                        "product_name"=>$product['product_name'],
+                         "product_price"=>$product['product_price'],
+                        "product_image"=>$image_url,
+                          "product_stock"=>$product['stock'],
+                        "approved_status"=>$aprove_status,
+                        "product_amount_sold"=> $product_order_count,
+                        "product_amount_made"=> $product_amount_made,
+                        "date_time"=>$date_time_created,
+                        "product_stock_quantity"=> $product['product_quantity']
+                        ];
+                    array_push($product_array, $product_list);
+            }
+            return response()->json(["current_page"=>$products['current_page'],"data"=>$product_array,"first_page_url"=>$products['first_page_url'],"last_page_url"=>$products['last_page_url'],"next_page_url"=>$products['next_page_url'],"prev_page_url"=>$products['prev_page_url'],"per_page"=>$products['per_page'],"total"=>$products['total']]);
+        }elseif($filter == "Out of stock"){
+                $products=Products::where('owner_id',$id)->where('stock',"Out of stock")->paginate(10)->toArray();
+            $product_array=array();
+            foreach($products['data'] as $product){
+                
+                    $product_id=$product['id'];
+                    $product_image= Sub_product::where('product_id',$product_id)->first();
+                    $image_url=$product_image->image_url;
+                    $product_order_count=Orders::where('product_id',$product_id)->count();
+                    $product_amount_made= Orders::where('product_id',$product_id)->sum('product_price');
+                    $date_time_created= $product['created_date'].','.$product['created_time'];
+                     $aprove_status= "";
+                     if($product['product_aprove_status'] == true){
+                       $aprove_status= "Approved";
+                    }else{
+                        $aprove_status= "Not Approved";
+                    }
+                    
+                     $product_list=[
+                        "id"=>$product['id'],
+                        "product_name"=>$product['product_name'],
+                         "product_price"=>$product['product_price'],
+                        "product_image"=>$image_url,
+                          "product_stock"=>$product['stock'],
+                        "approved_status"=>$aprove_status,
+                        "product_amount_sold"=> $product_order_count,
+                        "product_amount_made"=> $product_amount_made,
+                        "date_time"=>$date_time_created,
+                        "product_stock_quantity"=> $product['product_quantity']
+                        ];
+                    array_push($product_array, $product_list);
+            }
+            return response()->json(["current_page"=>$products['current_page'],"data"=>$product_array,"first_page_url"=>$products['first_page_url'],"last_page_url"=>$products['last_page_url'],"next_page_url"=>$products['next_page_url'],"prev_page_url"=>$products['prev_page_url'],"per_page"=>$products['per_page'],"total"=>$products['total']]);
+        }elseif($filter == "approved"){
+               $products=Products::where('owner_id',$id)->where('product_aprove_status',true)->paginate(10)->toArray();
+            $product_array=array();
+              foreach($products['data'] as $product){
+                
+                    $product_id=$product['id'];
+                    $product_image= Sub_product::where('product_id',$product_id)->first();
+                    $image_url=$product_image->image_url;
+                    $product_order_count=Orders::where('product_id',$product_id)->count();
+                    $product_amount_made= Orders::where('product_id',$product_id)->sum('product_price');
+                    $date_time_created= $product['created_date'].','.$product['created_time'];
+                     $aprove_status= "";
+                     
+                     if($product['product_aprove_status'] == true){
+                       $aprove_status= "Approved";
+                    }else{
+                        $aprove_status= "Not Approved";
+                    }
+                    
+                     $product_list=[
+                        "id"=>$product['id'],
+                        "product_name"=>$product['product_name'],
+                         "product_price"=>$product['product_price'],
+                        "product_image"=>$image_url,
+                          "product_stock"=>$product['stock'],
+                        "approved_status"=>$aprove_status,
+                        "product_amount_sold"=> $product_order_count,
+                        "product_amount_made"=> $product_amount_made,
+                        "date_time"=>$date_time_created,
+                        "product_stock_quantity"=> $product['product_quantity']
+                        ];
+                    array_push($product_array, $product_list);
+            }
+            return response()->json(["current_page"=>$products['current_page'],"data"=>$product_array,"first_page_url"=>$products['first_page_url'],"last_page_url"=>$products['last_page_url'],"next_page_url"=>$products['next_page_url'],"prev_page_url"=>$products['prev_page_url'],"per_page"=>$products['per_page'],"total"=>$products['total']]);
+        }elseif($filter == "not approved"){
+               $products=Products::where('owner_id',$id)->where('product_aprove_status',false)->paginate(10)->toArray();
+            $product_array=array();
+               foreach($products['data'] as $product){
+                
+                    $product_id=$product['id'];
+                    $product_image= Sub_product::where('product_id',$product_id)->first();
+                    $image_url=$product_image->image_url;
+                    $product_order_count=Orders::where('product_id',$product_id)->count();
+                    $product_amount_made= Orders::where('product_id',$product_id)->sum('product_price');
+                    $date_time_created= $product['created_date'].','.$product['created_time'];
+                     $aprove_status= "";
+                     if($product['product_aprove_status'] == true){
+                       $aprove_status= "Approved";
+                    }else{
+                        $aprove_status= "Not Approved";
+                    }
+                    
+                     $product_list=[
+                        "id"=>$product['id'],
+                        "product_name"=>$product['product_name'],
+                         "product_price"=>$product['product_price'],
+                        "product_image"=>$image_url,
+                          "product_stock"=>$product['stock'],
+                        "approved_status"=>$aprove_status,
+                        "product_amount_sold"=> $product_order_count,
+                        "product_amount_made"=> $product_amount_made,
+                        "date_time"=>$date_time_created,
+                        "product_stock_quantity"=> $product['product_quantity']
+                        ];
+                    array_push($product_array, $product_list);
+            }
+            return response()->json(["current_page"=>$products['current_page'],"data"=>$product_array,"first_page_url"=>$products['first_page_url'],"last_page_url"=>$products['last_page_url'],"next_page_url"=>$products['next_page_url'],"prev_page_url"=>$products['prev_page_url'],"per_page"=>$products['per_page'],"total"=>$products['total']]);
+        }
+
+           
+    }
+
+    //admin delete product
+    public function admin_delete_product(Products $product){
+            
+        $id=$product->id;
+        $check_orders= Orders::where('product_id',$id)->get();
+        
+        if($check_orders){
+               return response()->json([
+                "status"=>"failed",
+                "message"=>"You cant delete this product because it has be ordered by a customer"
+            ]); 
+        }else{
+            $product->delete();
+        Sub_product::where('product_id',$id)->delete();
+        
+        return response()->json([
+            "status"=>"success"
+            ]); 
+        }
+       
+}
+
+
+//admin create product
+public function create_product(Request $request){
+    $validator = Validator::make($request->all(), [
+       'product_name' => 'required',
+       'stock' => 'required',
+       'product_price' => 'required',
+       
+       'parent_category_id' => 'required',
+       'sub_category_id' => 'required',
+       'image'=>'required',
+   
+       'product_type'=>'required',
+       'product_quantity'=>'required'
+       
+   ]);
+
+   if($validator->fails()){
+           return response()->json($validator->errors(), 400);
+   }else{
+        $carbondate=Carbon::now();
+        $createdate = $carbondate->toDateString();
+        $createtime= $carbondate->now('UTC')->setTimezone('WAT')->format('g:i:s a');
+        $serialize_eye_size= serialize($request->eye_size);
+        
+       $uniqueid=uniqid();
+           $token = JWTAuth::parseToken()->getPayload()->toArray();
+           $id=$token['id'];
+           
+           
+            $create_product=Products::create([
+               'product_name'=>$request->product_name,
+               'stock'=>$request->stock,
+               'product_price'=>$request->product_price,
+               'parent_category_id'=>$request->parent_category_id,
+               'sub_category_id'=>$request->sub_category_id,
+               'brand'=>$request->brand,
+               'created_date'=>$createdate,
+               'created_time'=>$createtime,
+               'eye_size'=>$serialize_eye_size,
+               'owner_id'=>$id,
+               'product_type'=>$request->product_type,
+               'product_details'=>$request->product_details,
+               'product_specifications'=>$request->product_specifications,
+               'product_quantity'=>$request->product_quantity
+            ]);
+             $image=$request->image;
+    
+            
+                  $uniqueid=uniqid();
+       $imgextention=$image->getClientOriginalExtension();
+        $name=Carbon::now()->format('Ymd').'_'.$uniqueid.'.'.$imgextention;
+        $file= $image->move(
+                   public_path('pictures/'), $name
+               );
+        $base_url="https://codesandbox.com.ng/market_for_opticals/public/pictures/";
+               $image=$base_url.$name;
+        
+        Sub_product::create([
+                  "image_url"=>$image,
+                  "product_id"=> $create_product->id
+            ]);
+         $get_admin_details = Admin::where('owner_id',$id)->first();
+      Notification::create([
+                "notification_date"=>$createdate,
+                "notification_name"=>$get_admin_details->company_name ." "."just uploaded a product",
+                "notification_type"=>"product",
+                "notification_id"=>$create_product->id,
+                "owner_id"=>""
+              ]);
+       
+       return response()->json([
+           "product_id"=>$create_product->id,
+           "status"=>"success",
+           "message"=>"product created successfully"
+           ]);
+       
+       
+       
+           
+        
+   }
+}
+
+
+ //admin product update
+ public function update_product(Request $request){
+                   
+    $validator = Validator::make($request->all(), [
+        'product_name' => 'required',
+        'stock' => 'required',
+        'product_price' => 'required',
+        'parent_category_id' => 'required',
+        'sub_category_id' => 'required',
+        'image'=>'required',
+        'eye_size'=>'required',
+        'product_type'=>'required',
+        'product_details'=>'required',
+        'product_specifications'=>'required',
+        'product_id'=>'required'
+    ]);
+
+    if($validator->fails()){
+            return response()->json($validator->errors(), 400);
+    }else{
+         $carbondate=Carbon::now();
+         $createdate = $carbondate->toDateString();
+         $createtime= $carbondate->now('UTC')->setTimezone('WAT')->format('g:i:s a');
+         $serialize_eye_size= serialize($request->eye_size);
+         $product_id = $request->product_id;
+         
+        $uniqueid=uniqid();
+            $token = JWTAuth::parseToken()->getPayload()->toArray();
+            $id=$token['id'];
+            
+            
+             $create_product=Products::where('id',$product_id)->update([
+                'product_name'=>$request->product_name,
+                'stock'=>$request->stock,
+                'product_price'=>$request->product_price,
+                'parent_category_id'=>$request->parent_category_id,
+                'sub_category_id'=>$request->sub_category_id,
+                'brand'=>$request->brand,
+                'created_date'=>$createdate,
+                'created_time'=>$createtime,
+                'eye_size'=>$serialize_eye_size,
+                'owner_id'=>$id,
+                'product_aprove_status'=>false,
+                'product_type'=>$request->product_type,
+                'product_details'=>$request->product_details,
+                'product_specifications'=>$request->product_specifications
+             ]);
+              $create_product=Products::where('id',$product_id)->get();
+             
+             if($request->hasFile('image')){
+                   $image=$request->image;
+     
+             
+                   $uniqueid=uniqid();
+        $imgextention=$image->getClientOriginalExtension();
+         $name=Carbon::now()->format('Ymd').'_'.$uniqueid.'.'.$imgextention;
+         $file= $image->move(
+                    public_path('pictures/'), $name
+                );
+         $base_url="https://codesandbox.com.ng/market_for_opticals/public/pictures/";
+                $image=$base_url.$name;
+         
+            Sub_product::where('id',$request->product_id)->update([
+                   "image_url"=>$image,
+                  
+             ]);
+             }else{
+                   Sub_product::where('id',$request->product_id)->update([
+                   "image_url"=>$request->image,
+                  
+             ]);
+             }
+            $get_admin_details = Admin::where('owner_id',$id)->first();
+              Notification::create([
+                 "notification_date"=>$createdate,
+                 "notification_name"=>$get_admin_details->company_name ." "."just updated a product",
+                 "notification_type"=>"product",
+                 "notification_id"=>$create_product->id,
+                 "owner_id"=>""
+               ]);
+        return response()->json([
+            
+            "status"=>"success",
+            "message"=>"product updated successfully"
+            ]);
+        
+    }
+           
+}
+
+
+
+
 }

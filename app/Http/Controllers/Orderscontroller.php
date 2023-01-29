@@ -372,6 +372,91 @@ class Orderscontroller extends Controller
                     
     }
     
+
+      //get order list for admin/seller
+      public function get_adminorderedproduct(){
+        $token = JWTAuth::parseToken()->getPayload()->toArray();
+        $id=$token['id'];
+        
+      $order_list= Orders::get()->groupBy('customer_id');
     
+     $arrayvalue = [];
+    foreach($order_list as $name=>$value){
+        $test2= $value->groupBy('date');
+        array_push($arrayvalue , $test2);
+        
+  }
+  $filtered_data=[];
+    foreach($arrayvalue as $date8){
+        foreach($date8 as $test2=>$test3){
+            $test5= $test3->groupBy('time');
+        array_push($filtered_data , $test5);
+        }
+          
+        
+    }
+    
+    $final_result =[];
+     foreach($filtered_data as $value_data){
+        foreach($value_data as $test21=>$test22){
+            foreach($test22 as $test24){
+                 $array6=["customer_name"=> $test24->customer_name,"delivery_status"=>$test24->delivery_status,"date"=>$test24->date,"customer_id"=>$test24->customer_id,"time"=>$test24->time];
+                 array_push($final_result, $array6);
+                 break;
+            }
+        }
+    }
+       $paginated_data =$this->paginate($final_result);
+       return response()->json($paginated_data);
+}
+    
+
+
+ //order details
+ public function admin_order_details(Request $request){
+                 
+    $super_admin =  Superadmin::first();
+    $commission =   $super_admin->super_admin_commission;
+    
+    $date= $request->date;
+    $id = $request->id;
+    $time= $request->time;
+    $user = Orders::where('date',$date)->where('customer_id',$id)->first();
+   $orders = Orders::where('customer_id',$id)->where('date',$date)->where('time',$time)->get();
+   if($orders){
+       
+  
+   $final_result=[];
+   foreach($orders as $value){
+             $product_price=(int)$value->amount_ordered * (int)$value->product_price;
+             $superadmin_amount_made_from_commission = (int)$value->product_price *  $commission;
+             $amount_to_be_paid =(int)$product_price - $superadmin_amount_made_from_commission;
+             $data = [
+                 "customer_name"=>$user->customer_name,
+                 "product_name"=>$value->product_name,
+                 "image_url"=>$value->image_url,
+                 "product_price"=>$value->product_price,
+                 "amount_ordered"=>$value->amount_ordered,
+                 "payment_status"=>$value->status,
+                 "product_size"=>$value->product_size,
+                 "superadmin_commission_on_product"=>$superadmin_amount_made_from_commission,
+                 "amount_to_be_paid"=>$amount_to_be_paid
+                 ];
+                 
+                 array_push($final_result, $data);
+   }
+   return response()->json($final_result);
+}else{
+return response()->json([
+"status"=>"failed",
+"message"=>"No record found"
+]);
+}
+
+}
+
+
+
+
     
 }
